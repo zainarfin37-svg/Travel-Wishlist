@@ -172,10 +172,93 @@
       .row-2 { grid-template-columns: 1fr; }
       .card { padding: 1.5rem 1.25rem; }
     }
+
+    /* ── Lock screen ── */
+    #lockScreen {
+      position: fixed;
+      inset: 0;
+      background: var(--dusk);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 2rem;
+    }
+    #lockScreen .lock-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    #lockScreen h2 {
+      font-family: 'Playfair Display', serif;
+      color: var(--sand);
+      font-size: 1.5rem;
+      margin-bottom: 0.4rem;
+    }
+    #lockScreen p { color: var(--muted); font-size: 0.85rem; margin-bottom: 1.5rem; }
+    #lockScreen .lock-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 2rem 1.75rem;
+      width: 100%;
+      max-width: 340px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    }
+    #lockScreen input[type="password"] {
+      width: 100%;
+      padding: 0.7rem 0.9rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: 'Inter', sans-serif;
+      color: var(--dusk);
+      background: var(--sand);
+      margin-bottom: 0.85rem;
+      letter-spacing: 0.15em;
+    }
+    #lockScreen input[type="password"]:focus {
+      outline: none;
+      border-color: var(--sky);
+      box-shadow: 0 0 0 3px rgba(42,100,150,0.15);
+      background: var(--white);
+    }
+    #lockScreen .btn-unlock {
+      width: 100%;
+      padding: 0.85rem;
+      background: var(--coral);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #lockScreen .btn-unlock:hover { background: #c9633e; }
+    #lockErrMsg {
+      color: #922b21;
+      font-size: 0.85rem;
+      margin-top: 0.65rem;
+      text-align: center;
+      min-height: 1.2em;
+    }
+    #appContent { display: none; width: 100%; }
   </style>
 </head>
 <body>
 
+  <!-- ── Lock Screen ── -->
+  <div id="lockScreen">
+    <div class="lock-icon">🔒</div>
+    <h2>Travel Wishlist</h2>
+    <p>Enter your password to continue</p>
+    <div class="lock-card">
+      <input type="password" id="pwdInput" placeholder="Password" autofocus />
+      <button class="btn-unlock" onclick="unlock()">Unlock ✈️</button>
+      <div id="lockErrMsg"></div>
+    </div>
+  </div>
+
+  <!-- ── App (hidden until unlocked) ── -->
+  <div id="appContent">
   <header>
     <div class="globe">🌍</div>
     <h1>Travel Wishlist</h1>
@@ -258,10 +341,40 @@
       <div id="toast"></div>
     </form>
   </div>
+  </div> <!-- /appContent -->
+
+  <script>
+    // ── Password ──
+    const CORRECT_PASSWORD = 'blackops12';
+
+    function unlock() {
+      const entered = document.getElementById('pwdInput').value;
+      if (entered === CORRECT_PASSWORD) {
+        sessionStorage.setItem('unlocked', '1');
+        showApp();
+      } else {
+        document.getElementById('lockErrMsg').textContent = 'Wrong password. Try again.';
+        document.getElementById('pwdInput').value = '';
+        document.getElementById('pwdInput').focus();
+      }
+    }
+
+    function showApp() {
+      document.getElementById('lockScreen').style.display = 'none';
+      const app = document.getElementById('appContent');
+      app.style.cssText = 'display:flex;flex-direction:column;align-items:center;padding:2rem 1rem 4rem;width:100%;';
+    }
+
+    document.getElementById('pwdInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') unlock();
+    });
+
+    if (sessionStorage.getItem('unlocked') === '1') showApp();
+  </script>
 
   <script>
     // ── PASTE YOUR APPS SCRIPT WEB APP URL HERE ──
-    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxWn36wXrJkmoK--SgRJgLJ8rLYznQdEvdvJ4V966SbYH7o70de_06YxbSfMoZUCtCe/exec';
+    const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
 
     const form = document.getElementById('wishlistForm');
     const btn  = document.getElementById('submitBtn');
