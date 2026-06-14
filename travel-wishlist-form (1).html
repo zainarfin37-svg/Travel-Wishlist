@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Travel Wishlist</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600&display=swap');
+
+    :root {
+      --sky:    #2A6496;
+      --sand:   #F5ECD7;
+      --dusk:   #1A2E44;
+      --coral:  #E07B54;
+      --muted:  #8A99A8;
+      --white:  #FFFFFF;
+      --border: #D9CDB8;
+      --radius: 12px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--dusk);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem 4rem;
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .globe {
+      font-size: 2.5rem;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.6rem, 5vw, 2.2rem);
+      color: var(--sand);
+      letter-spacing: 0.01em;
+    }
+    header p {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 0.35rem;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 2rem 1.75rem;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    }
+
+    /* ── Form groups ── */
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+    label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--dusk);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 0.4rem;
+    }
+    label .req { color: var(--coral); margin-left: 2px; }
+
+    input[type="text"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.65rem 0.85rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      color: var(--dusk);
+      background: var(--sand);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--sky);
+      box-shadow: 0 0 0 3px rgba(42,100,150,0.15);
+      background: var(--white);
+    }
+    textarea { resize: vertical; min-height: 80px; }
+
+    /* select arrow */
+    .select-wrap { position: relative; }
+    .select-wrap::after {
+      content: '▾';
+      position: absolute;
+      right: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+      font-size: 0.85rem;
+    }
+
+    /* ── Two-col row ── */
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    /* ── Submit ── */
+    .btn-submit {
+      width: 100%;
+      padding: 0.9rem;
+      background: var(--coral);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      margin-top: 0.5rem;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-submit:hover { background: #c9633e; }
+    .btn-submit:active { transform: scale(0.98); }
+    .btn-submit:disabled { background: var(--muted); cursor: not-allowed; }
+
+    /* ── Toast ── */
+    #toast {
+      display: none;
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-align: center;
+    }
+    #toast.success { background: #e6f4ea; color: #2d6a3f; border: 1px solid #a8d5b5; }
+    #toast.error   { background: #fdecea; color: #922b21; border: 1px solid #f5aca6; }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 1.5rem 0;
+    }
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    @media (max-width: 420px) {
+      .row-2 { grid-template-columns: 1fr; }
+      .card { padding: 1.5rem 1.25rem; }
+    }
+
+    /* ── Lock screen ── */
+    #lockScreen {
+      position: fixed;
+      inset: 0;
+      background: var(--dusk);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 2rem;
+    }
+    #lockScreen .lock-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    #lockScreen h2 {
+      font-family: 'Playfair Display', serif;
+      color: var(--sand);
+      font-size: 1.5rem;
+      margin-bottom: 0.4rem;
+    }
+    #lockScreen p { color: var(--muted); font-size: 0.85rem; margin-bottom: 1.5rem; }
+    #lockScreen .lock-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 2rem 1.75rem;
+      width: 100%;
+      max-width: 340px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    }
+    #lockScreen input[type="password"] {
+      width: 100%;
+      padding: 0.7rem 0.9rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: 'Inter', sans-serif;
+      color: var(--dusk);
+      background: var(--sand);
+      margin-bottom: 0.85rem;
+      letter-spacing: 0.15em;
+    }
+    #lockScreen input[type="password"]:focus {
+      outline: none;
+      border-color: var(--sky);
+      box-shadow: 0 0 0 3px rgba(42,100,150,0.15);
+      background: var(--white);
+    }
+    #lockScreen .btn-unlock {
+      width: 100%;
+      padding: 0.85rem;
+      background: var(--coral);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #lockScreen .btn-unlock:hover { background: #c9633e; }
+    #lockErrMsg {
+      color: #922b21;
+      font-size: 0.85rem;
+      margin-top: 0.65rem;
+      text-align: center;
+      min-height: 1.2em;
+    }
+    #appContent { display: none; width: 100%; }
+  </style>
+</head>
+<body>
+
+  <!-- ── Lock Screen ── -->
+  <div id="lockScreen">
+    <div class="lock-icon">🔒</div>
+    <h2>Travel Wishlist</h2>
+    <p>Enter your password to continue</p>
+    <div class="lock-card">
+      <input type="password" id="pwdInput" placeholder="Password" autofocus />
+      <button class="btn-unlock" onclick="unlock()">Unlock ✈️</button>
+      <div id="lockErrMsg"></div>
+    </div>
+  </div>
+
+  <!-- ── App (hidden until unlocked) ── -->
+  <div id="appContent">
+  <header>
+    <div class="globe">🌍</div>
+    <h1>Travel Wishlist</h1>
+    <p>Add a new place to explore</p>
+  </header>
+
+  <div class="card">
+    <form id="wishlistForm" novalidate>
+
+      <!-- Place & Country -->
+      <p class="section-label">Destination</p>
+      <div class="form-group">
+        <label for="place">Place <span class="req">*</span></label>
+        <input type="text" id="place" name="place" placeholder="e.g. Fushimi Inari Taisha" required />
+      </div>
+
+      <div class="row-2">
+        <div class="form-group">
+          <label for="country">Country <span class="req">*</span></label>
+          <input type="text" id="country" name="country" placeholder="e.g. Japan" required />
+        </div>
+        <div class="form-group">
+          <label for="continent">Continent</label>
+          <div class="select-wrap">
+            <select id="continent" name="continent">
+              <option value="">— pick one —</option>
+              <option>Africa</option>
+              <option>Asia</option>
+              <option>Europe</option>
+              <option>North America</option>
+              <option>South America</option>
+              <option>Oceania</option>
+              <option>Antarctica</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Details -->
+      <p class="section-label">Details</p>
+      <div class="form-group">
+        <label for="special">What's so special?</label>
+        <textarea id="special" name="special" placeholder="Historic sites, unique culture, stunning scenery…"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="food">Food to try</label>
+        <input type="text" id="food" name="food" placeholder="e.g. Takoyaki, Matcha ice cream" />
+      </div>
+
+      <div class="row-2">
+        <div class="form-group">
+          <label for="priority">Priority</label>
+          <div class="select-wrap">
+            <select id="priority" name="priority">
+              <option value="">— none —</option>
+              <option>🔥 High</option>
+              <option>⭐ Medium</option>
+              <option>💤 Low</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="status">Status</label>
+          <div class="select-wrap">
+            <select id="status" name="status">
+              <option value="">— none —</option>
+              <option>Wishlist</option>
+              <option>Planning</option>
+              <option>Booked</option>
+              <option>Visited</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="submitBtn">Add to Wishlist ✈️</button>
+      <div id="toast"></div>
+    </form>
+  </div>
+  </div> <!-- /appContent -->
+
+  <script>
+    // ── Password ──
+    const CORRECT_PASSWORD = 'blackops12';
+
+    function unlock() {
+      const entered = document.getElementById('pwdInput').value;
+      if (entered === CORRECT_PASSWORD) {
+        sessionStorage.setItem('unlocked', '1');
+        showApp();
+      } else {
+        document.getElementById('lockErrMsg').textContent = 'Wrong password. Try again.';
+        document.getElementById('pwdInput').value = '';
+        document.getElementById('pwdInput').focus();
+      }
+    }
+
+    function showApp() {
+      document.getElementById('lockScreen').style.display = 'none';
+      const app = document.getElementById('appContent');
+      app.style.cssText = 'display:flex;flex-direction:column;align-items:center;padding:2rem 1rem 4rem;width:100%;';
+    }
+
+    document.getElementById('pwdInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') unlock();
+    });
+
+    if (sessionStorage.getItem('unlocked') === '1') showApp();
+  </script>
+
+  <script>
+    // ── PASTE YOUR APPS SCRIPT WEB APP URL HERE ──
+    const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
+
+    const form = document.getElementById('wishlistForm');
+    const btn  = document.getElementById('submitBtn');
+    const toast = document.getElementById('toast');
+
+    function showToast(msg, type) {
+      toast.textContent = msg;
+      toast.className = type;
+      toast.style.display = 'block';
+      if (type === 'success') {
+        setTimeout(() => { toast.style.display = 'none'; }, 4000);
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const place   = document.getElementById('place').value.trim();
+      const country = document.getElementById('country').value.trim();
+      if (!place || !country) {
+        showToast('Please fill in Place and Country.', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Saving…';
+
+      const payload = {
+        place,
+        country,
+        continent : document.getElementById('continent').value,
+        special   : document.getElementById('special').value.trim(),
+        food      : document.getElementById('food').value.trim(),
+        priority  : document.getElementById('priority').value,
+        status    : document.getElementById('status').value,
+      };
+
+      try {
+        await fetch(APPS_SCRIPT_URL, {
+          method : 'POST',
+          mode   : 'no-cors',        // Apps Script CORS quirk
+          headers: { 'Content-Type': 'application/json' },
+          body   : JSON.stringify(payload),
+        });
+        showToast('✅ Added to your wishlist!', 'success');
+        form.reset();
+      } catch (err) {
+        showToast('❌ Something went wrong. Check your URL and try again.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Add to Wishlist ✈️';
+      }
+    });
+  </script>
+</body>
+</html>
